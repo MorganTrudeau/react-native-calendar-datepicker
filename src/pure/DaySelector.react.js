@@ -1,10 +1,10 @@
 /**
-* DaySelector pure component.
-* @flow
-*/
+ * DaySelector pure component.
+ * @flow
+ */
 
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import PropTypes from "prop-types";
+import React, { Component } from "react";
 import {
   Dimensions,
   PanResponder,
@@ -12,13 +12,13 @@ import {
   LayoutAnimation,
   View,
   Text,
-  StyleSheet,
-} from 'react-native';
-import ViewPropTypes from '../util/ViewPropTypes';
+  StyleSheet
+} from "react-native";
+import ViewPropTypes from "../util/ViewPropTypes";
 
 // Component specific libraries.
-import _ from 'lodash';
-import Moment from 'moment';
+import _ from "lodash";
+import Moment from "moment";
 
 type Props = {
   // Focus and selection control.
@@ -40,10 +40,10 @@ type Props = {
   dayText?: Text.propTypes.style,
   dayTodayText?: Text.propTypes.style,
   daySelectedText?: Text.propTypes.style,
-  dayDisabledText?: Text.propTypes.style,
+  dayDisabledText?: Text.propTypes.style
 };
 type State = {
-  days: Array<Array<Object>>,
+  days: Array<Array<Object>>
 };
 
 export default class DaySelector extends Component {
@@ -55,16 +55,16 @@ export default class DaySelector extends Component {
   constructor(props: Props) {
     super(props);
     this.state = {
-      days: this._computeDays(props),
-    }
+      days: this._computeDays(props)
+    };
   }
 
-  _slide = (dx : number) => {
+  _slide = (dx: number) => {
     this.refs.wrapper.setNativeProps({
       style: {
-        left: dx,
+        left: dx
       }
-    })
+    });
   };
 
   componentWillMount() {
@@ -77,7 +77,7 @@ export default class DaySelector extends Component {
         return Math.abs(gestureState.dx) > 5;
       },
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-          return Math.abs(gestureState.dx) > 5;
+        return Math.abs(gestureState.dx) > 5;
       },
       onPanResponderMove: (evt, gestureState) => {
         this._slide(gestureState.dx);
@@ -88,16 +88,18 @@ export default class DaySelector extends Component {
         // responder. This typically means a gesture has succeeded
 
         // Get the height, width and compute the threshold and offset for swipe.
-        const {height, width} = Dimensions.get('window');
+        const { height, width } = Dimensions.get("window");
         const threshold = this.props.slideThreshold || _.min([width / 3, 250]);
         const maxOffset = _.max([height, width]);
         const dx = gestureState.dx;
-        const newFocus = Moment(this.props.focus).add(dx < 0 ? 1 : -1, 'month');
+        const newFocus = Moment(this.props.focus).add(dx < 0 ? 1 : -1, "month");
         const valid =
           this.props.maxDate.diff(
-            Moment(newFocus).startOf('month'), 'seconds') >= 0 &&
-          this.props.minDate.diff(
-            Moment(newFocus).endOf('month'), 'seconds') <= 0;
+            Moment(newFocus).startOf("month"),
+            "seconds"
+          ) >= 0 &&
+          this.props.minDate.diff(Moment(newFocus).endOf("month"), "seconds") <=
+            0;
 
         // If the threshold is met perform the necessary animations and updates,
         // and there is at least one valid date in the new focus perform the
@@ -110,12 +112,12 @@ export default class DaySelector extends Component {
             this.props.onFocus && this.props.onFocus(newFocus);
             LayoutAnimation.easeInEaseOut();
             setTimeout(() => {
-              this._slide(dx < 0 ? maxOffset : -maxOffset)
+              this._slide(dx < 0 ? maxOffset : -maxOffset);
               setTimeout(() => {
                 LayoutAnimation.easeInEaseOut();
-                this._slide(0)
-              }, 0)
-            }, 0)
+                this._slide(0);
+              }, 0);
+            }, 0);
           });
           this._slide(dx > 0 ? maxOffset : -maxOffset);
           return;
@@ -129,31 +131,39 @@ export default class DaySelector extends Component {
         // Another component has become the responder, so this gesture
         // should be cancelled
         LayoutAnimation.spring();
-        this._slide(0)
+        this._slide(0);
       },
       onShouldBlockNativeResponder: (evt, gestureState) => {
         // Returns whether this component should block native components from becoming the JS
         // responder. Returns true by default. Is currently only supported on android.
         return true;
-      },
+      }
     });
   }
 
   componentWillReceiveProps(nextProps: Object) {
-    if (this.props.focus != nextProps.focus ||
-        this.props.selected != nextProps.selected) {
+    if (
+      this.props.focus != nextProps.focus ||
+      this.props.selected != nextProps.selected
+    ) {
       this.setState({
-        days: this._computeDays(nextProps),
-      })
+        days: this._computeDays(nextProps)
+      });
     }
 
-    if (this.props.monthOffset != nextProps.monthOffset && nextProps.monthOffset !== 0) {
-      const newFocus = Moment(this.props.focus).add(nextProps.monthOffset, 'month');
+    if (
+      this.props.monthOffset != nextProps.monthOffset &&
+      nextProps.monthOffset !== 0
+    ) {
+      const newFocus = Moment(this.props.focus).add(
+        nextProps.monthOffset,
+        "month"
+      );
       this.props.onFocus && this.props.onFocus(newFocus);
     }
   }
 
-  _computeDays = (props: Object) : Array<Array<Object>> => {
+  _computeDays = (props: Object): Array<Array<Object>> => {
     let result = [];
     const currentMonth = props.focus.month();
     let iterator = Moment(props.focus);
@@ -163,44 +173,56 @@ export default class DaySelector extends Component {
       }
       let week = result[result.length - 1];
       week[iterator.weekday()] = {
-        valid: this.props.maxDate.diff(iterator, 'seconds') >= 0 &&
-               this.props.minDate.diff(iterator, 'seconds') <= 0,
+        valid:
+          this.props.maxDate.diff(iterator, "seconds") >= 0 &&
+          this.props.minDate.diff(iterator, "seconds") <= 0,
         date: iterator.date(),
-        selected: props.selected && iterator.isSame(props.selected, 'day'),
-        today: iterator.isSame(Moment(), 'day'),
+        selected:
+          props.selected &&
+          props.selected.filter(moment => iterator.isSame(moment, "day"))
+            .length > 0,
+        today: iterator.isSame(Moment(), "day")
       };
       // Add it to the result here.
-      iterator.add(1, 'day');
+      iterator.add(1, "day");
     }
     LayoutAnimation.easeInEaseOut();
     return result;
   };
 
-  _onChange = (day : Object) : void => {
-    let date = Moment(this.props.focus).add(day.date - 1 , 'day');
+  _onChange = (day: Object): void => {
+    let date = Moment(this.props.focus).add(day.date - 1, "day");
     this.props.onChange && this.props.onChange(date);
-  }
+  };
 
   render() {
     return (
       <View>
         <View style={[styles.headerView, this.props.dayHeaderView]}>
-          {_.map(Moment.weekdaysShort(true), (day) =>
-            <Text key={day} style={[styles.headerText, this.props.dayHeaderText]}>
+          {_.map(Moment.weekdaysShort(true), day => (
+            <Text
+              key={day}
+              style={[styles.headerText, this.props.dayHeaderText]}
+            >
               {day}
             </Text>
-          )}
+          ))}
         </View>
         <View ref="wrapper" {...this._panResponder.panHandlers}>
-          {_.map(this.state.days, (week, i) =>
-            <View key={i} style={[
+          {_.map(this.state.days, (week, i) => (
+            <View
+              key={i}
+              style={[
                 styles.rowView,
                 this.props.dayRowView,
-                i === this.state.days.length - 1 ? {
-                  borderBottomWidth: 0,
-                } : null,
-              ]}>
-              {_.map(week, (day, j) =>
+                i === this.state.days.length - 1
+                  ? {
+                      borderBottomWidth: 0
+                    }
+                  : null
+              ]}
+            >
+              {_.map(week, (day, j) => (
                 <TouchableHighlight
                   key={j}
                   style={[
@@ -209,71 +231,74 @@ export default class DaySelector extends Component {
                     day.selected ? this.props.daySelectedView : null
                   ]}
                   activeOpacity={day.valid ? 0.8 : 1}
-                  underlayColor='transparent'
-                  onPress={() => day.valid && this._onChange(day)}>
-                  <Text style={[
-                    styles.dayText,
-                    this.props.dayText,
-                    day.today ? this.props.dayTodayText : null,
-                    day.selected ? styles.selectedText : null,
-                    day.selected ? this.props.daySelectedText : null,
-                    day.valid ? null : styles.disabledText,
-                    day.valid ? null : this.props.dayDisabledText,
-                  ]}>
+                  underlayColor="transparent"
+                  onPress={() => day.valid && this._onChange(day)}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      this.props.dayText,
+                      day.today ? this.props.dayTodayText : null,
+                      day.selected ? styles.selectedText : null,
+                      day.selected ? this.props.daySelectedText : null,
+                      day.valid ? null : styles.disabledText,
+                      day.valid ? null : this.props.dayDisabledText
+                    ]}
+                  >
                     {day.date}
                   </Text>
                 </TouchableHighlight>
-              )}
+              ))}
             </View>
-          )}
+          ))}
         </View>
       </View>
     );
   }
 }
 DaySelector.defaultProps = {
-  focus: Moment().startOf('month'),
+  focus: Moment().startOf("month"),
   minDate: Moment(),
-  maxDate: Moment(),
+  maxDate: Moment()
 };
 
 const styles = StyleSheet.create({
   headerView: {
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 1,
     flexGrow: 1,
-    flexDirection: 'row',
-    height: 35,
+    flexDirection: "row",
+    height: 35
   },
   headerText: {
     flexGrow: 1,
     minWidth: 40,
-    textAlign: 'center',
+    textAlign: "center"
   },
   rowView: {
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 1,
     flexGrow: 1,
-    flexDirection: 'row',
-    height: 35,
+    flexDirection: "row",
+    height: 35
   },
   dayView: {
     flexGrow: 1,
-    margin: 5,
+    margin: 5
   },
   dayText: {
     flexGrow: 1,
     minWidth: 30,
     padding: 5,
-    textAlign: 'center',
+    textAlign: "center"
   },
   selectedText: {
     borderRadius: 5,
     borderWidth: 1,
-    fontWeight: 'bold',
+    fontWeight: "bold"
   },
   disabledText: {
-    borderColor: 'grey',
-    color: 'grey',
-  },
+    borderColor: "grey",
+    color: "grey"
+  }
 });
