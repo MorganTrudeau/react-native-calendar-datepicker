@@ -60,11 +60,11 @@ export default class DaySelector extends Component {
   }
 
   _slide = (dx : number) => {
-    this.refs.wrapper.setNativeProps({
-      style: {
-        left: dx,
-      }
-    })
+    // this.refs.wrapper.setNativeProps({
+    //   style: {
+    //     left: dx,
+    //   }
+    // })
   };
 
   componentWillMount() {
